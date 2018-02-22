@@ -31,9 +31,9 @@ void update_brightness_chase_f(uint8_t);
 void update_brightness_chase_b(uint8_t);
 void update_brightness_chase_cross(uint8_t);
 void update_brightness_chase_meet(uint8_t);
-void update_brightness_chase_blurr_f(uint8_t);
-void update_brightness_chase_blurr_b(uint8_t);
-void update_brightness_chase_blurr_fb(uint8_t);
+void update_brightness_chase_blur_f(uint8_t);
+void update_brightness_chase_blur_b(uint8_t);
+void update_brightness_chase_blur_fb(uint8_t);
 void update_brightness_tear_f(uint8_t);
 void update_brightness_tear_b(uint8_t);
 void update_brightness_tear_fb(uint8_t);
@@ -51,9 +51,9 @@ uint8_t calculate_brightness_chase_f(uint16_t);
 uint8_t calculate_brightness_chase_b(uint16_t);
 uint8_t calculate_brightness_chase_cross(uint16_t);
 uint8_t calculate_brightness_chase_meet(uint16_t);
-uint8_t calculate_brightness_chase_blurr_f(uint16_t);
-uint8_t calculate_brightness_chase_blurr_b(uint16_t);
-uint8_t calculate_brightness_chase_blurr_fb(uint16_t);
+uint8_t calculate_brightness_chase_blur_f(uint16_t);
+uint8_t calculate_brightness_chase_blur_b(uint16_t);
+uint8_t calculate_brightness_chase_blur_fb(uint16_t);
 uint8_t calculate_brightness_tear_f(uint16_t);
 uint8_t calculate_brightness_tear_b(uint16_t);
 uint8_t calculate_brightness_tear_fb(uint16_t);
@@ -71,9 +71,9 @@ void reset_brightness_chase_f();
 void reset_brightness_chase_b();
 void reset_brightness_chase_cross();
 void reset_brightness_chase_meet();
-void reset_brightness_chase_blurr_f();
-void reset_brightness_chase_blurr_b();
-void reset_brightness_chase_blurr_fb();
+void reset_brightness_chase_blur_f();
+void reset_brightness_chase_blur_b();
+void reset_brightness_chase_blur_fb();
 void reset_brightness_tear_f();
 void reset_brightness_tear_b();
 void reset_brightness_tear_fb();
@@ -129,9 +129,9 @@ enum motion_effects {m_steady,
                     m_chase_b,
                     m_chase_cross,
                     m_chase_meet,
-                    m_chase_blurr_f,
-					m_chase_blurr_b,
-                    m_chase_blurr_fb,
+                    m_chase_blur_f,
+					m_chase_blur_b,
+                    m_chase_blur_fb,
                     m_tear_f,
 					m_tear_b,
                     m_tear_fb,
@@ -162,7 +162,7 @@ void efg_set_current_motion(uint8_t);
 void efg_set_segment_width(uint8_t);
 void efg_set_segment_distance(uint8_t);
 void efg_set_update_interval(uint16_t);
-void efg_set_blurr_width(uint8_t);
+void efg_set_blur_width(uint8_t);
 void efg_set_segment_1(uint8_t);
 void efg_set_segment_2(uint8_t);
 void efg_set_segment_3(uint8_t);
@@ -177,8 +177,8 @@ void efg_color_set_update_interval(uint16_t);
 void efg_set_steady();
 void efg_set_chase(uint8_t mode, uint8_t segment_width, uint8_t segment_distance,
 		uint16_t update_interval);
-void efg_set_blurr(uint8_t mode, uint8_t segment_width, uint8_t segment_distance,
-		uint16_t update_interval, uint8_t blurr_width);
+void efg_set_blur(uint8_t mode, uint8_t segment_width, uint8_t segment_distance,
+		uint16_t update_interval, uint8_t blur_width);
 void efg_set_flash(uint8_t mode, uint16_t update_interval);
 void efg_set_stars(uint16_t update_interval, uint8_t sporn_rate);
 void efg_set_segment(uint8_t mode, uint8_t segment_1, uint8_t segment_2, uint8_t segment_3, uint8_t segment_4);
