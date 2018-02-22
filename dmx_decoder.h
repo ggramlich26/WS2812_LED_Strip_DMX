@@ -161,6 +161,9 @@
 #define	M_EQUALIZER				0x0F
 #define	M_EQUALIZER_MIRRORED	0x10
 #define	M_SNOW					0x11
+#define M_STROBE				0x12
+#define	M_CHASE_BLURR_B			0x13
+#define	M_TEAR_B				0x14
 
 #define C_STEADY				0x00
 #define	C_FADE_ALL				0x01

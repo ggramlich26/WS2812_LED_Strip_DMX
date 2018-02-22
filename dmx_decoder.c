@@ -37,17 +37,26 @@ void dmx_decode(uint8_t *data, uint8_t strip_mode){
 		case M_CHASE_BLURR_F:
 			efg_set_blur(m_chase_blur_f, data[2], data[3], data[1]?1/(1/1021.0+1/3.0*(data[1]-1)/255.0):0, data[4]);
 			break;
+		case M_CHASE_BLURR_B:
+			efg_set_blur(m_chase_blur_b, data[2], data[3], data[1]?1/(1/1021.0+1/3.0*(data[1]-1)/255.0):0, data[4]);
+			break;
 		case M_CHASE_BLURR_FB:
 			efg_set_blur(m_chase_blur_fb, data[2], data[3], data[1]?1/(1/1021.0+1/3.0*(data[1]-1)/255.0):0, data[4]);
 			break;
 		case M_TEAR_F:
 			efg_set_blur(m_tear_f, data[2], data[3], data[1]?1/(1/1021.0+1/3.0*(data[1]-1)/255.0):0, data[4]);
 			break;
+		case M_TEAR_B:
+			efg_set_blur(m_tear_b, data[2], data[3], data[1]?1/(1/1021.0+1/3.0*(data[1]-1)/255.0):0, data[4]);
+			break;
 		case M_TEAR_FB:
 			efg_set_blur(m_tear_fb, data[2], data[3], data[1]?1/(1/1021.0+1/3.0*(data[1]-1)/255.0):0, data[4]);
 			break;
 		case M_FLASH:
 			efg_set_flash(m_flash, data[1]?1/(1/5000.0+1/64.0*(data[1]-1)/255.0):0);		//todo: adapt to reasonalbe frequency
+			break;
+		case M_STROBE:
+			efg_set_flash(m_strobe, data[1]?1/(1/5000.0+1/64.0*(data[1]-1)/255.0):0);		//todo: adapt to reasonalbe frequency
 			break;
 		case M_GLOW:
 			efg_set_flash(m_glow, data[1]?1/(1/1250.0+1/1.0*(data[1]-1)/255.0):0);		//todo: adapt to reasonable frequency
