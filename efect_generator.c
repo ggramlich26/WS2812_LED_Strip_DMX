@@ -118,6 +118,22 @@ void efg_normalize_values(){
 			}
 		}
 	}
+	if(current_color_mode == c_rainbow_chase_b ||
+			current_motion == c_rainbow_chase_f
+			){
+		if(c_update_interval > 0){
+			c_update_interval = (uint32_t)c_update_interval/SPEED_FACTOR;
+			if(c_update_interval == 0){
+				c_update_interval = 1;
+			}
+		}
+		if(c_segment_width > 0){
+			c_segment_width = (uint32_t)c_segment_width*SPEED_FACTOR;
+			if(c_segment_width == 0){
+				c_segment_width = 1;
+			}
+		}
+	}
 }
 
 void efg_set_current_motion(uint8_t motion){
