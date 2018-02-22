@@ -307,6 +307,9 @@ void update_brightness(uint8_t time_diff){
     case m_flash:
         update_brightness_flash(time_diff);
         break;
+    case m_strobe:
+        update_brightness_strobe(time_diff);
+        break;
     case m_glow:
         update_brightness_glow(time_diff);
         break;
@@ -344,6 +347,7 @@ void reset_brightness(){
     reset_brightness_tear_b();
     reset_brightness_tear_fb();
     reset_brightness_flash();
+    reset_brightness_strobe();
     reset_brightness_glow();
     reset_brightness_stars();
     reset_brightness_segment_4();
@@ -390,6 +394,9 @@ uint8_t calculate_brightness(uint16_t i){
         break;
     case m_flash:
         return calculate_brightness_flash(i);
+        break;
+    case m_strobe:
+        return calculate_brightness_strobe(i);
         break;
     case m_glow:
         return calculate_brightness_glow(i);
@@ -881,6 +888,47 @@ void reset_brightness_flash(){
 
 uint8_t calculate_brightness_flash(uint16_t i){
     if(f_state){
+        return 255;
+    }
+    else{
+        return 0;
+    }
+}
+
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//																											//
+//													Strobe													//
+//																											//
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+int16_t s_time_to_change = 0;
+uint8_t s_state = 0;	//1 = on, 0 = off
+
+void update_brightness_strobe(uint8_t time_diff){
+    if(update_interval == 0){
+        return;
+    }
+    s_time_to_change -= time_diff;
+    if(s_time_to_change <= 0){
+        s_state = !s_state;
+        if(s_state){
+			s_time_to_change += 35;
+        }
+        else{
+			s_time_to_change += update_interval;
+        }
+    }
+}
+
+void reset_brightness_strobe(){
+    s_time_to_change = 0;
+    s_state = 0;
+}
+
+uint8_t calculate_brightness_strobe(uint16_t i){
+    if(s_state){
         return 255;
     }
     else{

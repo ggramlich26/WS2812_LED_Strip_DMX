@@ -38,6 +38,7 @@ void update_brightness_tear_f(uint8_t);
 void update_brightness_tear_b(uint8_t);
 void update_brightness_tear_fb(uint8_t);
 void update_brightness_flash(uint8_t);
+void update_brightness_strobe(uint8_t);
 void update_brightness_glow(uint8_t);
 void update_brightness_stars(uint8_t);
 void update_brightness_segment_4(uint8_t);
@@ -58,6 +59,7 @@ uint8_t calculate_brightness_tear_f(uint16_t);
 uint8_t calculate_brightness_tear_b(uint16_t);
 uint8_t calculate_brightness_tear_fb(uint16_t);
 uint8_t calculate_brightness_flash(uint16_t);
+uint8_t calculate_brightness_strobe(uint16_t);
 uint8_t calculate_brightness_glow(uint16_t);
 uint8_t calculate_brightness_stars(uint16_t);
 uint8_t calculate_brightness_segment_4(uint16_t);
@@ -78,6 +80,7 @@ void reset_brightness_tear_f();
 void reset_brightness_tear_b();
 void reset_brightness_tear_fb();
 void reset_brightness_flash();
+void reset_brightness_strobe();
 void reset_brightness_glow();
 void reset_brightness_stars();
 void reset_brightness_segment_4();
@@ -136,6 +139,7 @@ enum motion_effects {m_steady,
 					m_tear_b,
                     m_tear_fb,
                     m_flash,
+                    m_strobe,
                     m_glow,
                     m_stars,
                     m_segment_4,
