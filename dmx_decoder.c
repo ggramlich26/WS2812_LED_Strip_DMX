@@ -34,6 +34,9 @@ void dmx_decode(uint8_t *data, uint8_t strip_mode){
 		case M_CHASE_MEET:
 			efg_set_chase(m_chase_meet, data[2], data[3], data[1]?1/(1/1021.0+1/3.0*(data[1]-1)/255.0):0);
 			break;
+		case M_CHASE_DIVERGE:
+			efg_set_blurr(m_chase_diverge, data[2], data[3], data[1]?1/(1/1021.0+1/3.0*(data[1]-1)/255.0):0, data[4]);
+			break;
 		case M_CHASE_BLURR_F:
 			efg_set_blur(m_chase_blur_f, data[2], data[3], data[1]?1/(1/1021.0+1/3.0*(data[1]-1)/255.0):0, data[4]);
 			break;

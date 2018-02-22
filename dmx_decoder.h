@@ -25,8 +25,6 @@
 //		M_DX: Data command affecting the motion effect. The meaning depends on the selected motion effect.	//
 //			M_CMD == M_CHASE_F			|																	//
 //			M_CMD == M_CHASE_B			|																	//
-//			M_CMD == M_CHASE_CROSS		|																	//
-//			M_CMD == M_CHASE_MEET		|																	//
 //										M_D0:	Effect speed												//
 //													The speed in which the effect runs						//
 //													0 pauses the effect at the current position				//
@@ -40,14 +38,19 @@
 //										M_D3:	Unused														//
 //																											//
 //			M_CMD == M_CHASE_BLURR_F	|																	//
+//			M_CMD == M_CHASE_BLURR_B	|																	//
 //			M_CMD == M_CHASE_BLURR_FB	|																	//
 //			M_CMD == M_CHASE_TEAR_F		|																	//
+//			M_CMD == M_CHASE_TEAR_B		|																	//
 //			M_CMD == M_CHASE_TEAR_FB	|																	//
+//			M_CMD == M_CHASE_CROSS		|																	//
+//			M_CMD == M_CHASE_MEET		|																	//
 //										M_D0-M_D2:	Like above												//
 //										M_D3:		Blur width												//
 //														The number of LEDs that the blur is wide			//
 //															in each used direction							//
 //			M_CMD == M_FLASH			|																	//
+//			M_CMD == M_STROBE			|																	//
 //			M_CMD == M_GLOW				|																	//
 //										M_D0:		Effect speed											//
 //														as above											//
@@ -164,6 +167,7 @@
 #define M_STROBE				0x12
 #define	M_CHASE_BLURR_B			0x13
 #define	M_TEAR_B				0x14
+#define M_CHASE_DIVERGE			0x15
 
 #define C_STEADY				0x00
 #define	C_FADE_ALL				0x01
