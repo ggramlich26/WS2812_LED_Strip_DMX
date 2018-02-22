@@ -704,60 +704,37 @@ uint8_t calculate_brightness_chase_blurr_b(uint16_t i){
 //																											//
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-uint16_t cbfb_time_passed = 0;
-int16_t cbfb_position = 0;
-uint16_t cbfb_mode = 0; //0 = forward; 1 = backward
+float cbfb_position = 0;
+uint8_t cbfb_mode = 0; //0 = forward; 1 = backward
+
 
 void update_brightness_chase_blurr_fb(uint8_t time_diff){
     if(update_interval == 0){
         return;
     }
-    cbfb_time_passed += time_diff;
-    if(cbfb_mode == 0){
-        cbfb_position += cbfb_time_passed / update_interval;
-        if(cbfb_position > NUMBER_LEDS){
+    //forward
+    if(!cbfb_mode){
+        cbfb_position += (float)time_diff / update_interval;
+        if(cbfb_position >= NUMBER_LEDS-segment_width){
             cbfb_mode = 1;
-            cbfb_position = 2*NUMBER_LEDS - cbfb_position;
+            cbfb_position = NUMBER_LEDS -segment_width - (cbfb_position-(NUMBER_LEDS-segment_width));
         }
     }
     else{
-        cbfb_position -= cbfb_time_passed / update_interval;
-        if(cbfb_position < 0){
+        cbfb_position -= (float)time_diff / update_interval;
+        if(cbfb_position <= 0){
             cbfb_mode = 0;
             cbfb_position = -cbfb_position;
         }
     }
-
-    cbfb_time_passed = cbfb_time_passed % update_interval;
 }
 
 void reset_brightness_chase_blurr_fb(){
-    cbfb_time_passed = 0;
-    cbfb_position = 0;
+    cbfb_position = -1.0*segment_width-m_blurr_width;
 }
 
 uint8_t calculate_brightness_chase_blurr_fb(uint16_t i){
-    if(i > cbfb_position + m_blurr_width){
-        return 0;
-    }
-    if (i > cbfb_position){
-        return 255 - (uint16_t)(i-cbfb_position)*255/(m_blurr_width+1);
-    }
-    if((cbfb_position-i)%(segment_width+(uint32_t)segment_dist*NUMBER_LEDS/100) < segment_width){
-        return 255;
-    }
-    else if((cbfb_position-i)%(segment_width+(uint32_t)segment_dist*NUMBER_LEDS/100) < segment_width + m_blurr_width){
-        return 255 - (uint16_t)((cbfb_position-i)%(segment_width+(uint32_t)segment_dist*NUMBER_LEDS/100)-segment_width+1)\
-                *255/(m_blurr_width+1);
-    }
-    else if((cbfb_position-i)%(segment_width+(uint32_t)segment_dist*NUMBER_LEDS/100) >=
-            segment_width+(uint32_t)segment_dist*NUMBER_LEDS/100 - m_blurr_width){
-        return(uint16_t)((cbfb_position-i)%(segment_width+(uint32_t)segment_dist*NUMBER_LEDS/100)-segment_width-
-                                (uint32_t)segment_dist*NUMBER_LEDS/100) *255/(m_blurr_width+1);
-    }
-    else{
-        return 0;
-    }
+    return calculate_blurr_intensity_forward(cbfb_position, i, segment_width, m_blurr_width, m_blurr_width, segment_dist);
 }
 
 
