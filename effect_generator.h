@@ -32,8 +32,10 @@ void update_brightness_chase_b(uint8_t);
 void update_brightness_chase_cross(uint8_t);
 void update_brightness_chase_meet(uint8_t);
 void update_brightness_chase_blurr_f(uint8_t);
+void update_brightness_chase_blurr_b(uint8_t);
 void update_brightness_chase_blurr_fb(uint8_t);
 void update_brightness_tear_f(uint8_t);
+void update_brightness_tear_b(uint8_t);
 void update_brightness_tear_fb(uint8_t);
 void update_brightness_flash(uint8_t);
 void update_brightness_glow(uint8_t);
@@ -50,8 +52,10 @@ uint8_t calculate_brightness_chase_b(uint16_t);
 uint8_t calculate_brightness_chase_cross(uint16_t);
 uint8_t calculate_brightness_chase_meet(uint16_t);
 uint8_t calculate_brightness_chase_blurr_f(uint16_t);
+uint8_t calculate_brightness_chase_blurr_b(uint16_t);
 uint8_t calculate_brightness_chase_blurr_fb(uint16_t);
 uint8_t calculate_brightness_tear_f(uint16_t);
+uint8_t calculate_brightness_tear_b(uint16_t);
 uint8_t calculate_brightness_tear_fb(uint16_t);
 uint8_t calculate_brightness_flash(uint16_t);
 uint8_t calculate_brightness_glow(uint16_t);
@@ -68,8 +72,10 @@ void reset_brightness_chase_b();
 void reset_brightness_chase_cross();
 void reset_brightness_chase_meet();
 void reset_brightness_chase_blurr_f();
+void reset_brightness_chase_blurr_b();
 void reset_brightness_chase_blurr_fb();
 void reset_brightness_tear_f();
+void reset_brightness_tear_b();
 void reset_brightness_tear_fb();
 void reset_brightness_flash();
 void reset_brightness_glow();
@@ -124,8 +130,10 @@ enum motion_effects {m_steady,
                     m_chase_cross,
                     m_chase_meet,
                     m_chase_blurr_f,
+					m_chase_blurr_b,
                     m_chase_blurr_fb,
                     m_tear_f,
+					m_tear_b,
                     m_tear_fb,
                     m_flash,
                     m_glow,

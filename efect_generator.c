@@ -93,8 +93,10 @@ void efg_normalize_values(){
 			current_motion == m_chase_cross ||
 			current_motion == m_chase_meet ||
 			current_motion == m_chase_blurr_f ||
+			current_motion == m_chase_blurr_b ||
 			current_motion == m_chase_blurr_fb ||
 			current_motion == m_tear_f ||
+			current_motion == m_tear_b ||
 			current_motion == m_tear_fb
 			){
 		if(update_interval > 0){
@@ -287,11 +289,17 @@ void update_brightness(uint8_t time_diff){
     case m_chase_blurr_f:
         update_brightness_chase_blurr_f(time_diff);
         break;
+    case m_chase_blurr_b:
+        update_brightness_chase_blurr_b(time_diff);
+        break;
     case m_chase_blurr_fb:
         update_brightness_chase_blurr_fb(time_diff);
         break;
     case m_tear_f:
         update_brightness_tear_f(time_diff);
+        break;
+    case m_tear_b:
+        update_brightness_tear_b(time_diff);
         break;
     case m_tear_fb:
         update_brightness_tear_fb(time_diff);
@@ -330,8 +338,10 @@ void reset_brightness(){
     reset_brightness_chase_cross();
     reset_brightness_chase_meet();
     reset_brightness_chase_blurr_f();
+    reset_brightness_chase_blurr_b();
     reset_brightness_chase_blurr_fb();
     reset_brightness_tear_f();
+    reset_brightness_tear_b();
     reset_brightness_tear_fb();
     reset_brightness_flash();
     reset_brightness_glow();
@@ -363,11 +373,17 @@ uint8_t calculate_brightness(uint16_t i){
     case m_chase_blurr_f:
         return calculate_brightness_chase_blurr_f(i);
         break;
+    case m_chase_blurr_b:
+        return calculate_brightness_chase_blurr_b(i);
+        break;
     case m_chase_blurr_fb:
         return calculate_brightness_chase_blurr_fb(i);
         break;
     case m_tear_f:
         return calculate_brightness_tear_f(i);
+        break;
+    case m_tear_b:
+        return calculate_brightness_tear_b(i);
         break;
     case m_tear_fb:
         return calculate_brightness_tear_fb(i);
@@ -400,44 +416,114 @@ uint8_t calculate_brightness(uint16_t i){
     return 0;
 }
 
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//																											//
+//											Common Chase Functions											//
+//																											//
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+uint8_t calculate_blurr_intensity(float p, uint16_t i, uint8_t segment_width, uint8_t blurr_left, uint8_t blurr_right){
+    if(i<p-blurr_left || i>p+segment_width+blurr_right){
+        return 0;
+    }
+    //middle
+    else if(i >= p && i <= p+segment_width){
+        return 255;
+    }
+    //left
+    else if(i>=p-blurr_left && i < p){
+        if(blurr_left == 0){
+            return 0;
+        }
+        return (uint8_t)(255*(1-(p-i)/blurr_left));
+    }
+    //right
+    else if(i > p+segment_width && i < p+segment_width+blurr_right){
+        if(blurr_right == 0){
+            return 0;
+        }
+        return (uint8_t)(255*(1-(i-p-segment_width)/blurr_right));
+    }
+    return 0;
+}
+
+uint8_t calculate_blurr_intensity_forward(float p, uint16_t i, uint8_t segment_width, uint8_t blurr_left, uint8_t blurr_right, uint8_t segment_dist){
+    if(i>p+segment_width+blurr_right){
+        return 0;
+    }
+    if(segment_width == 0 && blurr_left == 0 && blurr_right == 0){
+        return 0;
+    }
+    if(segment_dist == 0){
+        return 255;
+    }
+    int32_t dist = (uint32_t)segment_dist*NUMBER_LEDS/100;
+    float np2 = p-dist*(((int32_t)p-(int32_t)i)/dist);
+    float np1 = p-dist*(((int32_t)p-(int32_t)i)/dist+1);
+    uint8_t res1 = calculate_blurr_intensity(np1, i, segment_width, blurr_left, blurr_right);
+    uint8_t res2 = calculate_blurr_intensity(np2, i, segment_width, blurr_left, blurr_right);
+    if((uint16_t)res1+res2>255){
+        return 255;
+    }
+    else{
+        return res1+res2;
+    }
+}
+
+uint8_t calculate_blurr_intensity_backward(float p, uint16_t i, uint8_t segment_width, uint8_t blurr_left, uint8_t blurr_right, uint8_t segment_dist){
+    if(i<p-segment_width-blurr_right){
+        return 0;
+    }
+    if(segment_width == 0 && blurr_left == 0 && blurr_right == 0){
+        return 0;
+    }
+    if(segment_dist == 0){
+        return 255;
+    }
+    int32_t dist = (uint32_t)segment_dist*NUMBER_LEDS/100;
+    float np2 = p+dist*(((int32_t)i-(int32_t)p)/dist);
+    float np1 = p+dist*(((int32_t)i-(int32_t)p)/dist+1);
+    uint8_t res1 = calculate_blurr_intensity(np1, i, segment_width, blurr_left, blurr_right);
+    uint8_t res2 = calculate_blurr_intensity(np2, i, segment_width, blurr_left, blurr_right);
+    if((uint16_t)res1+res2>255){
+        return 255;
+    }
+    else{
+        return res1+res2;
+    }
+}
+
+
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //																											//
 //												Chase Forward												//
 //																											//
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-uint16_t cf_time_passed = 0;
-uint16_t cf_position = 0;
+float cf_position = 0;
+
 
 void update_brightness_chase_f(uint8_t time_diff){
     if(update_interval == 0){
         return;
     }
-    cf_time_passed += time_diff;
-    cf_position += cf_time_passed / update_interval;
-    cf_time_passed = cf_time_passed % update_interval;
-    if(cf_position >= NUMBER_LEDS + segment_width + (uint32_t)segment_dist*NUMBER_LEDS/100){
-        cf_position = NUMBER_LEDS + (cf_position - NUMBER_LEDS)%(segment_width+(uint32_t)segment_dist*NUMBER_LEDS/100);
+    cf_position += (float)time_diff / update_interval;
+    while(cf_position >= NUMBER_LEDS + m_blurr_width){
+        cf_position -= ((uint32_t)segment_dist*NUMBER_LEDS/100);
     }
 }
 
 void reset_brightness_chase_f(){
-    cf_time_passed = 0;
-    cf_position = 0;
+    cf_position = -1.0*segment_width-m_blurr_width;
 }
 
 uint8_t calculate_brightness_chase_f(uint16_t i){
-    if(i > cf_position){
-        return 0;
+    if(segment_width >= 2){
+        return calculate_blurr_intensity_forward(cf_position, i, segment_width-2, 1, 1, segment_dist);
     }
-    if((cf_position-i)%(segment_width+(uint32_t)segment_dist*NUMBER_LEDS/100) < segment_width){
-        return 255;
-    }
-    else{
-        return 0;
-    }
+    return calculate_blurr_intensity_forward(cf_position, i, segment_width, 0, 0, segment_dist);
 }
-
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -446,40 +532,29 @@ uint8_t calculate_brightness_chase_f(uint16_t i){
 //																											//
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-uint16_t cb_time_passed = 0;
-int16_t cb_position = NUMBER_LEDS;
+float cb_position = NUMBER_LEDS;
 
 void update_brightness_chase_b(uint8_t time_diff){
     if(update_interval == 0){
         return;
     }
-    cb_time_passed += time_diff;
-    cb_position -= cb_time_passed / update_interval;
-    cb_time_passed = cb_time_passed % update_interval;
-    if(cb_position < 0){
-        if(-cb_position >= segment_width + (uint32_t)segment_dist*NUMBER_LEDS/100){
-            cb_position = -((-cb_position)%(segment_width+(uint32_t)segment_dist*NUMBER_LEDS/100));
-        }
+    cb_position -= (float)time_diff / update_interval;
+    while(cb_position <= -segment_width-m_blurr_width){
+        cb_position += ((uint32_t)segment_dist*NUMBER_LEDS/100);
     }
 }
 
 void reset_brightness_chase_b(){
-    cb_position = NUMBER_LEDS;
-    cb_time_passed = 0;
+    cb_position = (float)NUMBER_LEDS+m_blurr_width;
 }
 
 uint8_t calculate_brightness_chase_b(uint16_t i){
-	int16_t is = (int16_t)i;
-    if(is < cb_position){
-        return 0;
+    if(segment_width >= 2){
+        return calculate_blurr_intensity_backward(cb_position, i, segment_width-2, 1, 1, segment_dist);
     }
-    if((is-cb_position)%(segment_width+(uint32_t)segment_dist*NUMBER_LEDS/100) < segment_width){
-        return 255;
-    }
-    else{
-        return 0;
-    }
+    return calculate_blurr_intensity_backward(cb_position, i, segment_width, 0, 0, segment_dist);
 }
+
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -604,51 +679,53 @@ uint8_t calculate_brightness_chase_meet(uint16_t i){
 //																											//
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-uint16_t cbf_time_passed = 0;
-uint16_t cbf_position = 0;
+float cbf_position = 0;
+
 
 void update_brightness_chase_blurr_f(uint8_t time_diff){
     if(update_interval == 0){
         return;
     }
-    cbf_time_passed += time_diff;
-    cbf_position += cbf_time_passed / update_interval;
-    cbf_time_passed = cbf_time_passed % update_interval;
-    if(cbf_position >= NUMBER_LEDS + segment_width + (uint32_t)segment_dist*NUMBER_LEDS/100 + m_blurr_width){
-        cbf_position = NUMBER_LEDS + (cbf_position - NUMBER_LEDS)%(segment_width+(uint32_t)segment_dist*NUMBER_LEDS/100);
+    cbf_position += (float)time_diff / update_interval;
+    while(cbf_position >= NUMBER_LEDS + m_blurr_width){
+        cbf_position -= ((uint32_t)segment_dist*NUMBER_LEDS/100);
     }
 }
 
 void reset_brightness_chase_blurr_f(){
-    cbf_time_passed = 0;
-    cbf_position = 0;
+    cbf_position = -1.0*segment_width-m_blurr_width;
 }
 
 uint8_t calculate_brightness_chase_blurr_f(uint16_t i){
-    if(i > cbf_position + m_blurr_width){
-        return 0;
-    }
-    if (i > cbf_position){
-        return 255 - (uint16_t)(i-cbf_position)*255/(m_blurr_width+1);
-    }
-    if((cbf_position-i)%(segment_width+(uint32_t)segment_dist*NUMBER_LEDS/100) < segment_width){
-        return 255;
-    }
-    else if((cbf_position-i)%(segment_width+(uint32_t)segment_dist*NUMBER_LEDS/100) < segment_width + m_blurr_width){
-        return 255 - (uint16_t)((cbf_position-i)%(segment_width+(uint32_t)segment_dist*NUMBER_LEDS/100)-segment_width+1)\
-                *255/(m_blurr_width+1);
-    }
-    else if((cbf_position-i)%(segment_width+(uint32_t)segment_dist*NUMBER_LEDS/100) >=
-            segment_width+(uint32_t)segment_dist*NUMBER_LEDS/100 - m_blurr_width){
-        return(uint16_t)((cbf_position-i)%(segment_width+(uint32_t)segment_dist*NUMBER_LEDS/100)-segment_width-
-                                (uint32_t)segment_dist*NUMBER_LEDS/100) *255/(m_blurr_width+1);
-    }
-    else{
-        return 0;
-    }
+    return calculate_blurr_intensity_forward(cbf_position, i, segment_width, m_blurr_width, m_blurr_width, segment_dist);
 }
 
 
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//																											//
+//												Chase Blurr Backward 										//
+//																											//
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+float cbb_position = NUMBER_LEDS;
+
+void update_brightness_chase_blurr_b(uint8_t time_diff){
+    if(update_interval == 0){
+        return;
+    }
+    cbb_position -= (float)time_diff / update_interval;
+    while(cbb_position <= -segment_width-m_blurr_width){
+        cbb_position += ((uint32_t)segment_dist*NUMBER_LEDS/100);
+    }
+}
+
+void reset_brightness_chase_blurr_b(){
+    cbb_position = (float)NUMBER_LEDS+m_blurr_width;
+}
+
+uint8_t calculate_brightness_chase_blurr_b(uint16_t i){
+    return calculate_blurr_intensity_backward(cbb_position, i, segment_width, m_blurr_width, m_blurr_width, segment_dist);
+}
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //																											//
@@ -720,40 +797,53 @@ uint8_t calculate_brightness_chase_blurr_fb(uint16_t i){
 //																											//
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-uint16_t tf_time_passed = 0;
-uint16_t tf_position = 0;
+float tf_position = 0;
+
 
 void update_brightness_tear_f(uint8_t time_diff){
     if(update_interval == 0){
         return;
     }
-    tf_time_passed += time_diff;
-    tf_position += tf_time_passed / update_interval;
-    tf_time_passed = tf_time_passed % update_interval;
-    if(tf_position >= NUMBER_LEDS + segment_width + (uint32_t)segment_dist*NUMBER_LEDS/100 + m_blurr_width){
-        tf_position = NUMBER_LEDS + (tf_position - NUMBER_LEDS)%(segment_width+(uint32_t)segment_dist*NUMBER_LEDS/100);
+    tf_position += (float)time_diff / update_interval;
+    while(tf_position >= NUMBER_LEDS + m_blurr_width){
+        tf_position -= ((uint32_t)segment_dist*NUMBER_LEDS/100);
     }
 }
 
 void reset_brightness_tear_f(){
-    tf_time_passed = 0;
-    tf_position = 0;
+    tf_position = -1.0*segment_width-m_blurr_width;
 }
 
 uint8_t calculate_brightness_tear_f(uint16_t i){
-    if(i > tf_position){
-        return 0;
+    return calculate_blurr_intensity_forward(tf_position, i, segment_width, m_blurr_width, 1, segment_dist);
+}
+
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//																											//
+//                                                  Tear Backward     										//
+//																											//
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+float tb_position = NUMBER_LEDS;
+
+void update_brightness_tear_b(uint8_t time_diff){
+    if(update_interval == 0){
+        return;
     }
-    if((tf_position-i)%(segment_width+(uint32_t)segment_dist*NUMBER_LEDS/100) < segment_width){
-        return 255;
+    tb_position -= (float)time_diff / update_interval;
+    while(tb_position <= -segment_width-m_blurr_width){
+        tb_position += ((uint32_t)segment_dist*NUMBER_LEDS/100);
     }
-    else if((tf_position-i)%(segment_width+(uint32_t)segment_dist*NUMBER_LEDS/100) < segment_width + m_blurr_width){
-        return 255 - (uint16_t)((tf_position-i)%(segment_width+(uint32_t)segment_dist*NUMBER_LEDS/100)-segment_width)\
-                *255/m_blurr_width;
-    }
-    else{
-        return 0;
-    }
+}
+
+void reset_brightness_tear_b(){
+    tb_position = (float)NUMBER_LEDS+m_blurr_width;
+}
+
+uint8_t calculate_brightness_tear_b(uint16_t i){
+    return calculate_blurr_intensity_backward(tb_position, i, segment_width, 1, m_blurr_width, segment_dist);
 }
 
 

@@ -20,7 +20,7 @@
 #define	DMX_MODE	ws2812
 
 
-#define ON_DMX_BOARD
+//#define ON_DMX_BOARD
 
 
 #define	RLEDDDR		DDRD
