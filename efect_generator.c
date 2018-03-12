@@ -543,8 +543,8 @@ void update_brightness_chase_f(uint8_t time_diff){
         return;
     }
     cf_position += (float)time_diff / update_interval;
-    while(cf_position >= NUMBER_LEDS + m_blur_width && segment_dist > 0){
-        cf_position -= ((uint32_t)segment_dist*NUMBER_LEDS/100+segment_width+m_blur_width);
+    while(cf_position >= NUMBER_LEDS && segment_dist > 0){
+        cf_position -= ((uint32_t)segment_dist*NUMBER_LEDS/100+segment_width);
     }
 }
 
@@ -573,8 +573,8 @@ void update_brightness_chase_b(uint8_t time_diff){
         return;
     }
     cb_position -= (float)time_diff / update_interval;
-    while(cb_position <= -segment_width-m_blur_width && segment_dist > 0){
-        cb_position += ((uint32_t)segment_dist*NUMBER_LEDS/100+segment_width+m_blur_width);
+    while(cb_position <= -segment_width && segment_dist > 0){
+        cb_position += ((uint32_t)segment_dist*NUMBER_LEDS/100+segment_width);
     }
 }
 
