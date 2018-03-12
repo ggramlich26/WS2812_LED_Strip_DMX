@@ -17,10 +17,12 @@
 #include "dmx_decoder.h"
 #include "effect_generator.h"
 
+#define	MAX_DMX_PAUSE	00//90		//maximum time that can pass before a dmx update will be actively awaited
+#define	MAX_DMX_WAIT	81		//maximum time that the effect update will be blocked to wait for a dmx update
 #define	DMX_MODE	ws2812
 
 
-//#define ON_DMX_BOARD
+#define ON_DMX_BOARD
 
 
 #define	RLEDDDR		DDRD
@@ -82,6 +84,8 @@ volatile uint16_t DmxAddress;    //start address
 volatile uint8_t scheduler_update_led;
 volatile uint8_t scheduler_reception_complete;
 volatile uint8_t ws2812_transmission_corrupted;
+volatile uint32_t system_time;		//time since the system started in ms
+volatile uint32_t last_dmx_time; //system time at which the last dmx transmission started
 
 enum {IDLE, BREAK, STARTB, STARTADR}; //DMX states
 
@@ -116,6 +120,8 @@ void setup(){
 	LEDPORT &= ~(1<<BOARDLED);
 #endif
 
+	system_time = 0;
+
 	//DMX Initialization
 	gDmxState= IDLE; // initial state
 	DmxAddress = getDmxAddress(); // The desired DMX Start Address
@@ -132,9 +138,11 @@ void setup(){
 }
 
 void loop(){
+	static uint8_t prev_successfull = 0;	//used for not waiting for dmx reception when it is disconnected
 	if(scheduler_reception_complete | scheduler_update_led){
 		if(scheduler_reception_complete){
 			scheduler_reception_complete = 0;
+			prev_successfull = 1;
 			dmx_decode((uint8_t*)DmxRxField, getStripMode());
 		}
 		if(getStripMode() == ws2812){
@@ -160,6 +168,15 @@ void loop(){
 			set_green_led(efg_get_green());
 			set_blue_led(efg_get_blue());
 			scheduler_update_led = 0;
+		}
+	}
+	if(system_time - last_dmx_time >= MAX_DMX_PAUSE && prev_successfull){
+		uint32_t start_time = system_time;
+		while(!scheduler_reception_complete && !(system_time-start_time > MAX_DMX_WAIT));
+
+
+		if(!scheduler_reception_complete){
+			prev_successfull = 0;
 		}
 	}
 }
@@ -261,6 +278,7 @@ ISR(USART_RX_vect) {
 
 		else if (DmxState == STARTB)
 		{
+			last_dmx_time = system_time;
 			if (--DmxCount == 0)    //start address reached?
 			{
 				DmxCount= 1;            //set up counter for required channels
@@ -312,6 +330,7 @@ void timerInit(){
 //the interrupt routine executed for timer 1 every 35ms
 ISR(TIMER1_COMPA_vect) {
 	ws2812_transmission_corrupted = 1;
+	system_time += 35;
 	efg_inc_time_diff(35);
 //	static uint8_t count = 6;	//refresh LEDs each 35ms
 //	count--;
