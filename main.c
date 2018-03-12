@@ -17,8 +17,8 @@
 #include "dmx_decoder.h"
 #include "effect_generator.h"
 
-#define	MAX_DMX_PAUSE	00//90		//maximum time that can pass before a dmx update will be actively awaited
-#define	MAX_DMX_WAIT	81		//maximum time that the effect update will be blocked to wait for a dmx update
+#define	MAX_DMX_PAUSE	00//90		//maximum time that can pass before a DMX update will be actively awaited
+#define	MAX_DMX_WAIT	81		//maximum time that the effect update will be blocked to wait for a DMX update
 #define	DMX_MODE	ws2812
 
 
@@ -138,11 +138,11 @@ void setup(){
 }
 
 void loop(){
-	static uint8_t prev_successfull = 0;	//used for not waiting for dmx reception when it is disconnected
+	static uint8_t prev_successful = 0;	//used for not waiting for DMX reception when it is disconnected
 	if(scheduler_reception_complete | scheduler_update_led){
 		if(scheduler_reception_complete){
 			scheduler_reception_complete = 0;
-			prev_successfull = 1;
+			prev_successful = 1;	//there has been a successful transmission, so the device is connected and should eventually wait for DMX transmissions
 			dmx_decode((uint8_t*)DmxRxField, getStripMode());
 		}
 		if(getStripMode() == ws2812){
@@ -170,13 +170,17 @@ void loop(){
 			scheduler_update_led = 0;
 		}
 	}
-	if(system_time - last_dmx_time >= MAX_DMX_PAUSE && prev_successfull){
+
+	//wait for next DMX transmission if MAX_DMX_PAUSE has passed since the last reception and if the device is not disconnected from DMX
+	//prev_successful is false if the device is disconnected from the dmx bus as the last time it has waited for a transmission, it will
+	//not have been recieved.
+	if(system_time - last_dmx_time >= MAX_DMX_PAUSE && prev_successful){
 		uint32_t start_time = system_time;
 		while(!scheduler_reception_complete && !(system_time-start_time > MAX_DMX_WAIT));
 
 
 		if(!scheduler_reception_complete){
-			prev_successfull = 0;
+			prev_successful = 0;
 		}
 	}
 }
