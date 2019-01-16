@@ -10,7 +10,8 @@
 
 #include "stdint.h"
 
-#define WS2812
+#define WS2812			//for WS2812
+//#define WS2811		//for WS2811 (changes color order for transmitted signal to LEDs)
 #define	NUMBER_LEDS			150
 #define STRIP_LENGTH		5		//strip length in m
 #define SPEED_FACTOR		(NUMBER_LEDS*5/150./STRIP_LENGTH)
